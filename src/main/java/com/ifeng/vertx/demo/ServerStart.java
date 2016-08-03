@@ -1,6 +1,8 @@
 package com.ifeng.vertx.demo;
 
+import com.ifeng.vertx.demo.verticle.HttpPostServerVerticle;
 import com.ifeng.vertx.demo.verticle.HttpServerVerticle;
+import com.ifeng.vertx.demo.verticle.ProductExtRPCServerVerticle;
 import com.ifeng.vertx.demo.verticle.ProductRPCServerVerticle;
 import io.vertx.core.*;
 
@@ -17,7 +19,7 @@ public class ServerStart extends AbstractVerticle {
         //默认设置
         VertxOptions options = new VertxOptions();
         //启用集群模式
-        options.setClustered(true);
+//        options.setClustered(true);
 
         //默认部署参数
         DeploymentOptions deploymentOptions = new DeploymentOptions();
@@ -33,9 +35,11 @@ public class ServerStart extends AbstractVerticle {
         //需要部署的verticle
 
         //部署rpc远程调用服务
-        vertx.deployVerticle(ProductRPCServerVerticle.class.getName());
+//        vertx.deployVerticle(ProductRPCServerVerticle.class.getName());
+        vertx.deployVerticle(ProductExtRPCServerVerticle.class.getName());
         //部署httpServer
-        vertx.deployVerticle(HttpServerVerticle.class.getName());
+//        vertx.deployVerticle(HttpServerVerticle.class.getName());
+        vertx.deployVerticle(HttpPostServerVerticle.class.getName());
     }
 
     /**

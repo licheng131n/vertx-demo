@@ -24,8 +24,8 @@ public class ProductServiceImpl implements ProductService {
 
     public ProductServiceImpl(Vertx vertx) {
 
-        //初始化mongo客户端
         this.vertx = vertx;
+        //初始化mongo客户端
         JsonObject config = Vertx.currentContext().config();
 
         String uri = config.getString("mongo_uri");

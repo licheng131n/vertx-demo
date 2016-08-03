@@ -75,7 +75,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     /**
      * 全请求过滤
      * 设置写响应
-     * 设置content-type请求头
+     * 设置content-type响应头
      *
      * @param routingContext
      */
