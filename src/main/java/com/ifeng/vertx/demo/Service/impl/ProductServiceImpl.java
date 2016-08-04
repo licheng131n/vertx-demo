@@ -68,7 +68,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-
     @Override
     public void update(Product product, Handler<AsyncResult<Long>> resultHandler) {
         JsonObject query = new JsonObject().put("_id", product.get_id());

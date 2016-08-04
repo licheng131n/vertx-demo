@@ -19,4 +19,12 @@ public interface ProductExtService {
     void collectionList(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
     void remove(JsonObject product, Handler<AsyncResult<Long>> resultHandler);
+
+    void update(JsonObject product, Handler<AsyncResult<Long>> resultHandler);
+
+    void findOne(JsonObject parameters, Handler<AsyncResult<JsonObject>> resultHandler);
+
+    void find(JsonObject parameters, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+    void count(JsonObject parameters, Handler<AsyncResult<Long>> resultHandler);
 }

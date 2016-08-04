@@ -1,9 +1,7 @@
 package com.ifeng.vertx.demo;
 
 import com.ifeng.vertx.demo.verticle.HttpPostServerVerticle;
-import com.ifeng.vertx.demo.verticle.HttpServerVerticle;
 import com.ifeng.vertx.demo.verticle.ProductExtRPCServerVerticle;
-import com.ifeng.vertx.demo.verticle.ProductRPCServerVerticle;
 import io.vertx.core.*;
 
 import java.util.function.Consumer;
@@ -38,7 +36,7 @@ public class ServerStart extends AbstractVerticle {
 //        vertx.deployVerticle(ProductRPCServerVerticle.class.getName());
         vertx.deployVerticle(ProductExtRPCServerVerticle.class.getName());
         //部署httpServer
-//        vertx.deployVerticle(HttpServerVerticle.class.getName());
+//        vertx.deployVerticle(HttpGetServerVerticle.class.getName());
         vertx.deployVerticle(HttpPostServerVerticle.class.getName());
     }
 

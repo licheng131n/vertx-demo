@@ -48,7 +48,7 @@ public class ProductExtServiceImpl implements ProductExtService {
     @Override
     public void save(JsonObject product, Handler<AsyncResult<String>> resultHandler) {
         mongoClient.save("products", product, result -> {
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 resultHandler.handle(Future.succeededFuture(result.result()));
             } else {
                 resultHandler.handle(Future.failedFuture(result.cause()));
@@ -60,7 +60,7 @@ public class ProductExtServiceImpl implements ProductExtService {
     public void collectionList(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         JsonObject query = new JsonObject();
         mongoClient.find("products", query, result -> {
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 resultHandler.handle(Future.succeededFuture(result.result()));
             } else {
                 resultHandler.handle(Future.failedFuture(result.cause()));
@@ -71,8 +71,55 @@ public class ProductExtServiceImpl implements ProductExtService {
     @Override
     public void remove(JsonObject product, Handler<AsyncResult<Long>> resultHandler) {
         mongoClient.removeDocument("products", product, result -> {
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 resultHandler.handle(Future.succeededFuture(result.result().getRemovedCount()));
+            } else {
+                resultHandler.handle(Future.failedFuture(result.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void update(JsonObject product, Handler<AsyncResult<Long>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", product.getValue("_id"));
+        JsonObject update = new JsonObject().put("$set", product);
+        mongoClient.updateCollection("products", query, update, result -> {
+            if (result.succeeded()) {
+                resultHandler.handle(Future.succeededFuture(result.result().getDocModified()));
+            } else {
+                resultHandler.handle(Future.failedFuture(result.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void findOne(JsonObject parameters, Handler<AsyncResult<JsonObject>> resultHandler) {
+        JsonObject fields = new JsonObject();
+        mongoClient.findOne("products", parameters, fields, result -> {
+            if (result.succeeded()) {
+                resultHandler.handle(Future.succeededFuture(result.result()));
+            } else {
+                resultHandler.handle(Future.failedFuture(result.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void find(JsonObject parameters, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        mongoClient.find("products", parameters, result -> {
+            if (result.succeeded()) {
+                resultHandler.handle(Future.succeededFuture(result.result()));
+            } else {
+                resultHandler.handle(Future.failedFuture(result.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void count(JsonObject parameters, Handler<AsyncResult<Long>> resultHandler) {
+        mongoClient.count("products", parameters, result -> {
+            if (result.succeeded()) {
+                resultHandler.handle(Future.succeededFuture(result.result()));
             } else {
                 resultHandler.handle(Future.failedFuture(result.cause()));
             }

@@ -5,12 +5,12 @@ import as.leap.vertx.rpc.impl.VertxRPCClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Created by licheng1 on 2016/8/4.
  */
-public abstract class ServerVerticle1 extends AbstractVerticle {
+public abstract class ServerVerticle extends AbstractVerticle {
 
     /**
      *  绑定RPC服务
@@ -37,6 +37,26 @@ public abstract class ServerVerticle1 extends AbstractVerticle {
         routes(router);
         //监听端口等待接收请求
         server.requestHandler(router::accept).listen(port);
+    }
+
+    /**
+     * 输出
+     * @param out
+     * @param routingContext
+     */
+    protected void responseEnd(String out, RoutingContext routingContext) {
+        routingContext.response().end(out);
+        routingContext.response().close();
+    }
+
+    /**
+     * 响应码
+     * @param code
+     * @param routingContext
+     */
+    protected void statusCode(int code, RoutingContext routingContext) {
+        routingContext.response().setStatusCode(code).end();
+        routingContext.response().close();
     }
 
     /**

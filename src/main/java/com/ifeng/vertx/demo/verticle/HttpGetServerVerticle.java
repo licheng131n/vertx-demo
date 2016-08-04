@@ -1,15 +1,10 @@
 package com.ifeng.vertx.demo.verticle;
 
-import as.leap.vertx.rpc.impl.RPCClientOptions;
-import as.leap.vertx.rpc.impl.VertxRPCClient;
 import com.ifeng.vertx.demo.Service.ProductService;
 import com.ifeng.vertx.demo.bean.Product;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -21,7 +16,7 @@ import java.util.Map;
 /**
  * Created by licheng1 on 2016/8/1.
  */
-public class HttpServerVerticle extends AbstractVerticle {
+public class HttpGetServerVerticle extends ServerVerticle {
 
     /**
      * mongo操作业务
@@ -38,18 +33,15 @@ public class HttpServerVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
 
         //mongo微服务RPC调用客户端
-        RPCClientOptions<ProductService> rpcClientOptions = new RPCClientOptions<ProductService>(vertx)
-                .setBusAddress(ProductService.rpcAddress)
-                .setServiceClass(ProductService.class);
-        //绑定服务
-        productService = new VertxRPCClient<ProductService>(rpcClientOptions).bindService();
+        productService = bindService(ProductService.class, ProductService.rpcAddress);
 
+        //启动httpServer端口8080
+        startServer(8080);
+    }
 
-        HttpServer server = vertx.createHttpServer();
-        Router router = Router.router(vertx);
-        //请求体可读
+    @Override
+    public void routes(Router router) {
         router.route().handler(BodyHandler.create());
-
         //过滤所有请求
         router.route().handler(this::handleAll);
         //查询产品列表
@@ -66,10 +58,6 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.route("/mongoDemo/find!pname=:productName").handler(this::handleFind);
         //过滤数量统计
         router.route("/mongoDemo/count!pname=:productName").handler(this::handleCount);
-
-
-        //监听8080端口等待接收请求
-        server.requestHandler(router::accept).listen(8080);
     }
 
     /**
@@ -89,21 +77,21 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     /**
      * 产品列表
+     *
      * @param routingContext
      */
     public void handleList(RoutingContext routingContext) {
 
         productService.collectionList(result -> {
             HttpServerResponse response = routingContext.response();
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 System.out.println("查询产品列表成功");
                 JsonArray array = new JsonArray(result.result());
-                response.write("产品列表 : " + array.toString());
+                responseEnd("产品列表 : " + array.toString(), routingContext);
             } else {
-                System.out.println("查询产品列表失败 : " + result.cause().toString());
-                response.write("查询产品列表失败 : " + result.cause().toString());
+                System.out.println("查询产品列表失败 : " + result.cause().getMessage());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
     }
 
@@ -121,12 +109,11 @@ public class HttpServerVerticle extends AbstractVerticle {
             HttpServerResponse response = routingContext.response();
             if (result.succeeded()) {
                 System.out.println("产品save成功,productId : " + result.result());
-                response.write("产品save成功,productId : " + result.result());
+                responseEnd("产品save成功,productId : " + result.result(), routingContext);
             } else {
-                System.out.println("产品save失败 : " + result.cause().toString());
-                response.write("产品save失败 : " + result.cause().toString());
+                System.out.println("产品save失败 : " + result.cause().getMessage());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
 
     }
@@ -147,17 +134,17 @@ public class HttpServerVerticle extends AbstractVerticle {
             HttpServerResponse response = routingContext.response();
             if (result.succeeded()) {
                 System.out.println("产品update成功");
-                response.write("产品update成功");
+                responseEnd("产品update成功, update产品数量 : " + result.result(), routingContext);
             } else {
-                System.out.println("产品update失败");
-                response.write("产品update失败 : " + result.cause().toString());
+                System.out.println("产品update失败 : " + result.cause().getMessage());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
     }
 
     /**
      * 产品删除
+     *
      * @param routingContext
      */
     public void handleRemove(RoutingContext routingContext) {
@@ -167,19 +154,19 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         productService.remove(product, result -> {
             HttpServerResponse response = routingContext.response();
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 System.out.println("remove产品成功，remove数量:" + result.result());
-                response.write("remove产品成功，remove数量:" + result.result());
+                responseEnd("remove产品成功，remove数量:" + result.result(), routingContext);
             } else {
                 System.out.println("remove产品失败");
-                response.write("产品remove失败 : " + result.cause().toString());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
     }
 
     /**
      * 查询产品。复数
+     *
      * @param routingContext
      */
     public void handleFind(RoutingContext routingContext) {
@@ -189,19 +176,19 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         productService.find(parameters, result -> {
             HttpServerResponse response = routingContext.response();
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 System.out.println("find产品成功");
-                response.write("find产品成功，products:" + new JsonArray(result.result()).toString());
+                responseEnd("find产品成功，products:" + new JsonArray(result.result()).toString(), routingContext);
             } else {
                 System.out.println("find产品失败");
-                response.write("find产品失败 : " + result.cause().toString());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
     }
 
     /**
      * 查询单个产品
+     *
      * @param routingContext
      */
     public void handleFindOne(RoutingContext routingContext) {
@@ -211,19 +198,19 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         productService.findOne(parameters, result -> {
             HttpServerResponse response = routingContext.response();
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 System.out.println("find产品成功");
-                response.write("find产品成功，product:" + result.result());
+                responseEnd("find产品成功，product:" + result.result(), routingContext);
             } else {
                 System.out.println("find产品失败");
-                response.write("find产品失败 : " + result.cause().toString());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
     }
 
     /**
      * 统计符合条件的产品数量
+     *
      * @param routingContext
      */
     public void handleCount(RoutingContext routingContext) {
@@ -233,14 +220,13 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         productService.count(parameters, result -> {
             HttpServerResponse response = routingContext.response();
-            if(result.succeeded()) {
+            if (result.succeeded()) {
                 System.out.println("count产品成功，count数量:" + result.result());
-                response.write("count产品成功，count数量:" + result.result());
+                responseEnd("count产品成功，count数量:" + result.result(), routingContext);
             } else {
                 System.out.println("count产品失败");
-                response.write("产品count失败 : " + result.cause().toString());
+                statusCode(400, routingContext);
             }
-            response.end();
         });
     }
 }
